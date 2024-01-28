@@ -1,0 +1,63 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Dancing+Script&display=swap");
+
+.home-container {
+  display: flex;
+ 
+}
+.img-container {
+  height: 90vh;
+  width: 40%;
+   
+}
+.img-container img {
+  height: 100%;
+  width: 100%;
+  object-fit: fill;
+}
+.dateTimepicker-container {
+  width: 60%;
+  height: 90vh;
+  display: flex;
+  flex-direction: column;
+background-color: #d9e2f7;
+}
+
+.form-container {
+  background-color: rgba(255, 255, 255, 0.182);
+  margin: auto;
+  /* height: 50%; */
+  width: 50%;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 3rem;
+  font-family: "Poppins", sans-serif;
+  color: #292950;
+}
+.form-container h1 span {
+  color: #f5738d;
+}
+.form-container select {
+  padding: 5px;
+  border: none;
+  font-family: "Poppins", sans-serif;
+}
+.form-container input {
+  padding: 4px;
+  border: none;
+  font-family: "Poppins", sans-serif;
+  font-size: smaller;
+}
+.form-container button {
+  padding: 10px;
+  background-color: #f5738d;
+  border: none;
+  font-family: "Poppins", sans-serif;
+
+  margin-top: 10px;
+}
+.form-container button:hover {
+  background-color: #f5738d8d;
+  cursor: pointer;
+}
