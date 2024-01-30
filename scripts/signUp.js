@@ -7,7 +7,13 @@ const password = document.querySelector("#password");
 const confirmPass = document.querySelector("#confirm-pass");
 
 // const submitButton = document.querySelector('#submit-btn')
+window.addEventListener('load',()=>{
+  const currUser = JSON.parse(localStorage.getItem('currUser'));
 
+  if(currUser!== null){
+    window.location = './index.html'
+  }
+})
 password.addEventListener("blur", passwordValidation);
 
 function passwordValidation() {
@@ -141,6 +147,12 @@ function validateInputs(data) {
   if (errorMessageMap.size === 0) {
     const { confirmPass, ...userData } = data;
     saveUser(userData);
+    const redirectLink =
+    (localStorage.getItem('redirectURL')) || "http://127.0.0.1:5500/index.html";
+  console.log(redirectLink);
+  
+  window.location = redirectLink;
+  localStorage.removeItem('redirectURL');
   }
 }
 

@@ -21,7 +21,7 @@ function calculateTotalRevenue() {
   const orders = JSON.parse(localStorage.getItem("orders"));
 
   let totalAmount = orders.reduce((acc, order) => {
-    return acc + order.cost;
+    return acc + parseInt(order.cost);
   }, 0);
   return totalAmount;
 }
@@ -45,12 +45,14 @@ function totalVehicles() {
 }
 
 function displayFigures() {
-  const revenue = calculateTotalRevenue();
+  let revenue = parseInt(calculateTotalRevenue());
+
+ 
   const users = calculateUsers();
   const bookings = totalBookings();
   const vehicles = totalVehicles();
-  figures_container.innerHTML = ` <div class="figures"><h3> Total Revenue</h3>
-  <p> ₹ ${revenue}</p>
+  figures_container.innerHTML = ` <div class="figures"><h3> Total Revenue (Rs)</h3>
+  <p>  ${revenue}</p>
 </div>
 <div class="figures"><h3> Total Users</h3>
 <p> ${users}</p></div>
@@ -61,14 +63,13 @@ function displayFigures() {
 </div>`;
 }
 displayFigures();
-
 function calculateBikesScooters() {
   const orders = JSON.parse(localStorage.getItem("orders"));
 
   const bikeScooterCount = orders.reduce(
     (acc, order) => {
       const vehicleDetail = getVehicleDetails(order.vehicleId);
-      console.log(vehicleDetail);
+     
       if(vehicleDetail===undefined) return acc;
       if (vehicleDetail.vType === "bike") {
         acc.bike += 1;
@@ -121,7 +122,7 @@ function mostLikedVehicleBrand() {
     acc[vehicle.vbrand] += 1;
     return acc;
   }, {});
-  console.log(brandsCount);
+  
 
   const graphLabels = Object.keys(brandsCount);
   const graphData = Object.values(brandsCount);
@@ -181,7 +182,7 @@ function mostBookingCities() {
   }, initialState);
   const graphLabels = Object.keys(cityWiseOrder);
   const graphData = Object.values(cityWiseOrder);
-  console.log(cityWiseOrder);
+
   const data = {
     labels: graphLabels,
     datasets: [
@@ -272,7 +273,7 @@ function calculateRevenue() {
   let orders = JSON.parse(localStorage.getItem("orders"));
   orders = sortOrders(orders); 
   const filterOption = revenueSelect.value;
-  console.log(filterOption);
+
   const revenue = orders.reduce((stats, order) => {
     const orderDate = new Date(order.start_date);
     // const isWithinTimeRange =
@@ -288,7 +289,7 @@ function calculateRevenue() {
           const year = orderDate.getFullYear();
           const formattedMonth = month < 10 ? `0${month}` : month;
           const joinedDate = `${formattedMonth}-${year}`;
-          console.log(joinedDate);
+          
           key = joinedDate;
           break;
         }
@@ -308,7 +309,6 @@ function calculateRevenue() {
     return stats;
   }, {});
 
-  console.log(revenue);
   const graphLabels = Object.keys(revenue);
   const graphData = Object.values(revenue);
   const data = {

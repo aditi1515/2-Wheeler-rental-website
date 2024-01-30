@@ -64,7 +64,7 @@
     <h1>Manage Vehicles</h1>
     <div class="addUser-container">
       <dialog id="vehicleForm-dialog">
-        <form class="vehicle-form-container">
+        <form class="vehicle-form-container-main">
           <h2>Welcome to <span>2WheelWander</span></h2>
          
           <div class="input-field-vehicle">
@@ -122,14 +122,14 @@
           
          
           <div class="form-btn-container">
-            <button  type="submit" class="submit-btn">Add Vehicle</button>
+            <button  type="submit" class="submit-btn-form">Add Vehicle</button>
             <button  class="closeForm-btn">Close</button>
             
           </div>
-          <div id="snackbar">Vehicle added successfully</div>
         </form>
-     
+        
       </dialog>
+      <div id="snackbar">Vehicle added successfully</div>
       
       <button class="addVehicle-btn"> Add Vehicle</button>
     </div>
@@ -159,7 +159,7 @@
             <th>Location</th>
             <th>DayPrice</th>
             <th>Price(10pm-6am)</th>
-            <th>Availability</th>
+   
             <th>Image</th>
             <th>Actions</th>
           </thead>
@@ -168,7 +168,8 @@
         <div id="paginationWrapper">
           <div class="input">
             <label for = "itemPerPage">Items Per Page : </label>
-            <input type="text" name="itemPerPage" id="itemPerPage" value = 10>
+            <input type="number" name="itemPerPage" id="itemPerPage" value = 10>
+            <span id="item-per-page-warning"></span>
           </div>
           <div class="input">
             Page no
@@ -182,10 +183,10 @@
       </div>
       
   </div>
-  <dialog  id="displayBooking-dialog" class="displayBooking-dialog">
+  <dialog  id="displayBooking-dialog" class="displayBooking-dialog"></dialog>
+  </section>
   <div id="snackbar-displaypage"></div>
   
-</section>
   <script src="./scripts/navbar.js"></script> 
   <script src="./scripts/manageVehicles.js"></script>
   <script src="./scripts/displayVehicles.js"></script>

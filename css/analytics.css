@@ -17,6 +17,7 @@ body {
   display: flex;
   justify-content: center;
   gap:1rem;
+  
 }
 
 .figures{
@@ -29,6 +30,7 @@ body {
   flex-direction: column;
   gap: 10px;
   justify-content: flex-end;    
+ 
   
 }
 

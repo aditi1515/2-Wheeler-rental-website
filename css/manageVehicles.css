@@ -50,9 +50,11 @@
  width: 50%;
  margin: auto;
  margin-top: -3rem;
+ z-index: 10;
 }
 
-.vehicle-form-container {
+.vehicle-form-container,
+.vehicle-form-container-main {
  /* background-color: rgba(255, 255, 255, 0.475); */
  margin: auto;
  /* height: 40%; */
@@ -198,7 +200,7 @@
 }
 
 /* //pagination */
-.displayBikes-container  {
+.displayBikes-container {
  background-color: #d9e2f7;
  position: relative;
 }
@@ -449,7 +451,6 @@ tbody img {
  background-color: #f5738d8d;
  cursor: pointer;
 }
-
 
 #prevPage:disabled,
 #nextPage:disabled {

@@ -2,19 +2,157 @@ const detailsContainer = document.querySelector(".details");
 const ongoingTable = document.querySelector(".ongoing-table");
 const activeTable = document.querySelector(".active-table");
 const passiveTable = document.querySelector(".passive-table");
+const changePassBtn = document.querySelector(".change-password");
+const changePassDialog = document.querySelector("#changePass-dialog");
+const currPass = document.querySelector("#curr-pass");
+const newPass = document.querySelector("#new-pass");
+const confirmNewPass = document.querySelector("#confirm-new-pass");
+const passChangeBtn = document.querySelector(".pass-change");
+const cancelChangeBtn = document.querySelector(".pass-cancel");
+const passChangeForm = document.querySelector(".pass-container");
+const passChangeSnackbar = document.querySelector('#passChange-snackbar')
+window.addEventListener("load", () => {
+  const currUser = JSON.parse(localStorage.getItem("currUser"));
 
-window.addEventListener('load',()=>{
+  
+  if (currUser === null) {
+    window.location = "./index.html";
+  }
+});
 
-  const currUser = JSON.parse(localStorage.getItem('currUser'));
-  console.log(currUser);
-  if( currUser===null){
+//change password button
+changePassBtn.addEventListener("click", () => {
 
-    window.location = './index.html'
+  changePassDialog.show();
+  passChangeForm.reset();
+  resetError();
+
+});
+newPass.addEventListener("blur", passwordValidation);
+
+//submit pass change form
+passChangeForm.addEventListener("submit", (e) => {
+  e.preventDefault();
+  resetError();
+  passwordValidation();
+  validateInputs(newPass.value);
+});
+
+//validate inputs of form
+function validateInputs(newPass) {
+  const errorMessageMap = new Map();
+  const currUser = JSON.parse(localStorage.getItem("currUser"));
+
+  const users = JSON.parse(localStorage.getItem("users"));
+
+
+  const filterUser = users.filter((user) => {
+    return user.userId === currUser.userId;
+  });
+  
+  //passWord
+  const currPassMess = [];
+
+  if (currPass.value === "") {
+    currPassMess.push("Password Required");
+    errorMessageMap.set(currPass, currPassMess);
+  } else if (currPass.value !== filterUser[0].password) {
+    currPassMess.push("Incorrect Password");
+    errorMessageMap.set(currPass, currPassMess);
+  }
+  //cnfirm password check
+
+  if (newPass !== confirmNewPass.value) {
+    const confirmPassMess = [];
+    confirmPassMess.push("Password does not match");
+    errorMessageMap.set(confirmNewPass, confirmPassMess);
   }
 
+  setError(errorMessageMap);
+
+  if (errorMessageMap.size === 0) {
+    filterUser[0].password = newPass;
+    
+    for (const user of users) {
+    
+      if (user.userId === currUser.userId) {
+        user.password = newPass;
+        localStorage.setItem("users", JSON.stringify(users));
+        showSnackbar("Password changed successfully",2000)
+        changePassDialog.close();
+        
+      }
+    }
+  }
 }
 
-)
+//validate new password
+function passwordValidation() {
+  const passVal = newPass.value;
+  const errMessArr = [];
+  if (!/[A-Z]/.test(passVal)) {
+    errMessArr.push("Password must include at least one uppercase letter");
+  }
+
+  // Check if the password includes at least one lowercase letter
+  if (!/[a-z]/.test(passVal)) {
+    errMessArr.push("Password must include at least one lowercase letter");
+  }
+
+  // Check if the password includes at least one number
+  if (!/\d/.test(passVal)) {
+    errMessArr.push("Password must include at least one number");
+  }
+
+  // Check if the password includes at least one special character
+  if (!/[!@#$%^&*()_+{}\[\]:;<>,.?~\\/-]/.test(passVal)) {
+    errMessArr.push("Password must include at least one special character");
+  }
+
+  // Check if the password meets the overall length requirement
+  if (passVal.length < 8) {
+    errMessArr.push("Password must be at least 8 characters long");
+  }
+
+  const errorMessages = new Map();
+  errorMessages.set(newPass, errMessArr);
+
+
+  setError(errorMessages);
+}
+
+//set error messages in form 
+function setError(errorMessages) {
+  errorMessages.forEach((messArr, element) => {
+    const errorListElement = document.createElement("ul");
+    for (const mess of messArr) {
+      const listElement = document.createElement("li");
+      listElement.innerText = mess;
+      errorListElement.appendChild(listElement);
+    }
+    // console.log(messArr, element);
+    const inputField = element.parentElement;
+    // console.log(inputField);
+    const errorDisplay = inputField.querySelector(".error");
+    errorDisplay.innerText = "";
+    errorDisplay.appendChild(errorListElement);
+    // console.log(errorListElement);
+  });
+}
+//reset errors 
+function resetError() {
+  const allErrorElements = document.querySelectorAll(".error");
+  allErrorElements.forEach((element) => {
+    element.innerHTML = "";
+  });
+}
+
+
+
+
+cancelChangeBtn.addEventListener("click", () => {
+  changePassDialog.close();
+});
 window.addEventListener("load", () => {
   const currUser = JSON.parse(localStorage.getItem("currUser"));
   if (currUser) {
@@ -120,9 +258,7 @@ function prepareOrderData() {
     `;
     passiveTable.appendChild(row);
   }
-  console.log("Ongoing Orders:", categorizedOrders.ongoingOrders);
-  console.log("Active Orders:", categorizedOrders.activeOrders);
-  console.log("Passive Orders:", categorizedOrders.passiveOrders);
+
 }
 
 prepareOrderData();
@@ -140,21 +276,16 @@ const activeOrderCancelBtn = document.querySelectorAll(".active-cancel-btn");
 for (const cancelBtn of activeOrderCancelBtn) {
   cancelBtn.addEventListener("click", () => {
     const orderId = cancelBtn.getAttribute("orderId");
-    console.log(orderId);
     const orders = JSON.parse(localStorage.getItem("orders"));
-    console.log(orders);
     const canceledOrder = orders.filter((order) => order.orderId === orderId);
-    console.log(canceledOrder);
     const otherOrders = orders.filter((order) => order.orderId !== orderId);
-    console.log(otherOrders);
     const vehicles = JSON.parse(localStorage.getItem("vehicles"));
     vehicles.forEach((vehicle) => {
       if (vehicle.vId === canceledOrder[0].vehicleId) {
-        console.log(vehicle.orderIds);
         vehicle.orderIds = vehicle.orderIds.filter((orderId) => {
           return orderId !== canceledOrder[0].orderId;
         });
-        console.log(vehicle.orderIds);
+        
       }
     });
     localStorage.setItem("vehicles", JSON.stringify(vehicles));
@@ -162,3 +293,15 @@ for (const cancelBtn of activeOrderCancelBtn) {
     window.location.reload();
   });
 }
+
+//snackbar
+function showSnackbar(message, timeout = 3000) {
+  passChangeSnackbar.className = "show";
+  passChangeSnackbar.textContent = message;
+  setTimeout(function () {
+   passChangeSnackbar.className = passChangeSnackbar.className.replace(
+    "show",
+    ""
+   );
+  }, timeout);
+ }

@@ -5,6 +5,10 @@ const adminOption = document.querySelector(".admin");
 const logOutOption = document.querySelectorAll("#logOut-link");
 const home = document.querySelectorAll(".home");
 // const logOutAdmin = document.querySelector("#logOut-link-admin");
+
+// window.addEventListener("load", ()=>{
+//   window.location = './index.html'
+// })
 window.addEventListener("load", handleNavbarVisibility);
 
 for (const logOut of logOutOption) {
@@ -37,7 +41,7 @@ function handleNavbarVisibility(){
     loggedInNavbar.style.display = "none";
     adminOption.style.display = "flex";
   } else if (currUser === null) {
-    console.log(currUser);
+    // console.log(currUser);
     loggedOutNavbar.style.display = "flex";
     loggedInNavbar.style.display = "none";
     adminOption.style.display = "none";

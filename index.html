@@ -65,22 +65,77 @@
       </div>
       <div class="dateTimepicker-container">
       
-        <form  class="form-container" action="bookingPage.html" method="GET">
+        <form  class="form-container" onsubmit="validateAndRedirect(event); return false;" >
           <h1>Commuting Made <span>Easy</span></h1>
           <h1><span>Affordable</span> and <span>Quick</span></h1>
          <label for="location">Location :</label>
        <select class="locationSelect" name="locationSelect">
-        <option>Select city</option>
+
        </select>
         <div></div>
          <label for="start-date">Start Date & Time :</label>
          <input type = "datetime-local" name="start-date" id="start-date"/>
          <label for="end-date">End Date & Time :</label>
-         <input type = "datetime-local" name="end-date"/>
+       
+         <input type = "datetime-local" name="end-date" id="end-date"/>
+         <small style="color: red;">* Minimum Rental Time 30 minutes</small>
          <button type="submit" >Find a Ride </button>
         </form>
       </div>
+      <div id="datesValidation-snackbar"></div>
     </section>
+    <script>
+      function validateAndRedirect(event) {
+  event.preventDefault();
+  // Get form elements
+  const locationSelect = document.querySelector('.locationSelect');
+  const startDateInput = document.getElementById('start-date');
+  const endDateInput = document.getElementById('end-date');
+
+  // Validate location
+  if (locationSelect.value === '') {
+    // alert('Please select a city');
+    showSnackbar('Please select a city');
+    return false;
+  }
+
+  // Validate if dates are empty
+  if (startDateInput.value === '' || endDateInput.value === '') {
+    showSnackbar('Please select a valid date range',2000);
+    return false;
+  }
+
+  // Validate date and time
+  const startDate = new Date(startDateInput.value);
+  const endDate = new Date(endDateInput.value);
+
+  // Validate if start date is in the past
+  const bufferTime = 1 * 60 * 1000; // 1 minute in milliseconds
+
+if (startDate < new Date() - bufferTime || endDate < new Date() - bufferTime) {
+ showSnackbar("Dates must not be  in the past",2000);
+ return false;
+}
+
+  // Validate if end date is at least 30 mins ahead of start date
+  const minDifference = 1 * 30 * 60  * 1000; // 1 hour in milliseconds
+
+  if(endDate<startDate){
+    showSnackbar('Enter Valid Dates',2000)
+    return false;
+  }
+ else if (endDate - startDate < minDifference) {
+    showSnackbar('Minimum duration between start and end date should be 30mins',2000);
+    return false;
+  }
+
+  // Construct the URL for redirection
+  const redirectURL = `http://127.0.0.1:5500/bookingPage.html?locationSelect=${encodeURIComponent(locationSelect.value)}&start-date=${encodeURIComponent(startDateInput.value)}&end-date=${encodeURIComponent(endDateInput.value)}`;
+
+  // Redirect to the new URL
+  window.location.replace(redirectURL);
+}
+    </script>
     <script src="./scripts/navbar.js"></script>
     <script src="./locations.js"></script>
     <script src="./scripts/index.js"></script>

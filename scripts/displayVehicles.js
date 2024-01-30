@@ -8,6 +8,7 @@ const prevPageBtn = document.querySelector("#prevPage");
 const nextPageBtn = document.querySelector("#nextPage");
 const snackbarDisplayPage = document.getElementById("snackbar-displaypage");
 const dialog = document.getElementById("displayBooking-dialog");
+const itemPerPageWarning = document.querySelector("#item-per-page-warning");
 
 function getBikes() {
  const bikesInLocalStorage = JSON.parse(localStorage.getItem("vehicles"));
@@ -31,6 +32,22 @@ function displayBikes(
   itemsPerPage: 10,
  }
 ) {
+ if (
+  paginationDetails.itemsPerPage < 1 ||
+  isNaN(paginationDetails.itemsPerPage)
+ ) {
+  itemPerPageWarning.textContent = "Value must be greater than 0";
+  itemPerPageWarning.style.display = "block";
+  bikesTableBody.innerHTML = "";
+  pageNoSpan.textContent = 0;
+  totalPagesSpan.textContent = 0;
+  prevPageBtn.disabled = true;
+  nextPageBtn.disabled = true;
+  return;
+ } else {
+  itemPerPageWarning.style.display = "none";
+ }
+
  // empty prev table
  bikesTableBody.innerHTML = "";
 
@@ -54,12 +71,14 @@ function displayBikes(
  // get bikes for current page
 
  const bikesAsPerPagination = paginate(sortedBikes, paginationDetails);
-
+ console.log("bikesAsPerPagination", bikesAsPerPagination);
  // display current page number in UI
  pageNoSpan.textContent = paginationDetails.pageNo;
  // enable/disable buttons
- prevPageBtn.disabled = paginationDetails.pageNo === 1;
- nextPageBtn.disabled = paginationDetails.pageNo === totalPages;
+ prevPageBtn.disabled =
+  paginationDetails.pageNo === 1 || bikesAsPerPagination.length === 0;
+ nextPageBtn.disabled =
+  paginationDetails.pageNo === totalPages || bikesAsPerPagination.length === 0;
  console.log("currentPage items :", bikesAsPerPagination.length);
 
  // display bikes in UI
@@ -74,14 +93,14 @@ function displayBikes(
       <td>${bike.location}</td>
       <td>${bike.priceHour}</td>
       <td>${bike.nightPrice}</td>
-      <td>${bike.available}</td>
+    
       <td><img src = '${bike.vimg}' ></td>
       <td class="action-wrapper">
         <button onClick='editVehicle(event)' class='vehicle-edit' vehicle=${JSON.stringify(
          removeSpaceFromObjectField(bike)
         )}>Edit</button>
        <button onClick=${
-        isAnyActiveOrder ? "" : "deleteVehicleById(event)"
+        isAnyActiveOrder ? "" : "deletevehicledialog(event)"
        } vehicleId = ${bike.vId} class='${
    isAnyActiveOrder ? "vehicle-delete disable" : "vehicle-delete"
   }'>Delete</button>
@@ -91,6 +110,27 @@ function displayBikes(
  });
 }
 
+function deletevehicledialog(event) {
+ const vehicleId = event.target.getAttribute("vehicleId");
+ dialog.innerHTML = `
+  <div class="delete-dialog">
+  <p>Are you sure you want to delete this vehicle?</p>
+  <button class="delete-btn" vehicleId = ${vehicleId}>Delete</button>
+  <button class="cancel-btn">Cancel</button>
+  </div>
+  `;
+ dialog.style.marginTop = "15rem";
+ dialog.show();
+ const deleteBtn = document.querySelector(".delete-btn");
+ const cancelBtn = document.querySelector(".cancel-btn");
+ deleteBtn.addEventListener("click", () => {
+  deleteVehicleById(event);
+  dialog.close();
+ });
+ cancelBtn.addEventListener("click", () => {
+  dialog.close();
+ });
+}
 function sortBikes(bikes, sortBy) {
  // Implement your sorting logic here
  if (sortBy === "HighToLowPrice") {
@@ -112,8 +152,10 @@ function prepareSearchPredicate() {
 function prepareBasePaginationDetails() {
  const paginationDetails = {
   pageNo: parseInt(pageNoSpan.innerHTML) || 1,
-  itemsPerPage: parseInt(itemsPerPageInput.value) || 10,
+  itemsPerPage: parseInt(itemsPerPageInput.value),
  };
+ console.log("paginationDetails", paginationDetails);
+
  console.log(paginationDetails);
  return paginationDetails;
 }
@@ -126,8 +168,12 @@ searchByNameInput.addEventListener("input", () => {
 //  const paginationDetails = prepareBasePaginationDetails();
 //  prepareSearchPredicate(searchByNameInput.value, paginationDetails);
 // });
-itemsPerPageInput.addEventListener("input", () => {
+itemsPerPageInput.addEventListener("input", (e) => {
+ console.log("page items entered", e.target.value);
+
  const paginationDetails = prepareBasePaginationDetails();
+ console.log("calling display with ", paginationDetails);
+
  displayBikes(searchByNameInput.value, undefined, paginationDetails);
 });
 function paginate(bikes, paginationDetails) {
@@ -174,8 +220,15 @@ function editVehicle(event) {
  const vehicle = restoreSpacesInObject(
   JSON.parse(event.target.getAttribute("vehicle"))
  );
-
+ console.log("editing vehicle");
  console.log(vehicle);
+
+ const locationString = JSON.parse(localStorage.getItem("locations"))
+  .map((location) => {
+   const isSelected = location.city === vehicle.location ? "selected" : "";
+   return `<option value="${location.city}" ${isSelected}>${location.city}</option>`;
+  })
+  .join("");
 
  dialog.innerHTML = `
  <form vehicleId = ${
@@ -226,7 +279,7 @@ function editVehicle(event) {
  <div class="input-field">
    <label for="location">Location:</label>
    <select class="locationSelect" required>
-     <option value="${vehicle.location}" selected>${vehicle.location}</option>
+    ${locationString}
    </select>
  </div>
 
@@ -287,6 +340,7 @@ function editVehicle(event) {
    priceHour,
    nightPrice,
    available: vehicle.available,
+   orderIds: vehicle.orderIds,
   };
 
   const vehicles = JSON.parse(localStorage.getItem("vehicles")) || [];
@@ -379,13 +433,8 @@ function restoreSpacesInObject(obj) {
 }
 
 function showSnackbar(message, timeout = 3000) {
- // Get the snackbar DIV
- console.log(message);
- // Add the "show" class to DIV
  snackbarDisplayPage.className = "show";
  snackbarDisplayPage.textContent = message;
- console.log(snackbarDisplayPage);
- // After 3 seconds, remove the show class from DIV
  setTimeout(function () {
   snackbarDisplayPage.className = snackbarDisplayPage.className.replace(
    "show",

@@ -60,7 +60,7 @@
 
   <div class="available-vehicles">
     <div class="dateTime-picker">
-      <form  class="form-container" action="bookingPage.html" method="get">
+      <form  class="form-container" onsubmit="validateAndRedirect(event); return false;">
        <div>  <label for="location">Location :</label>
         <select id="locationSelectFilter" class="locationSelect" name="locationSelect" >
       
@@ -73,6 +73,7 @@
     
        <button type="submit" >Find a Ride </button>
       </form>
+      <div id ='bookingPage-dates-snackbar'></div>
     </div>
     
     <div class="vehicles-card-container">

@@ -1,9 +1,8 @@
 const selectLocation = document.querySelector(".locationSelect");
 const vehicleCardContainer = document.querySelector(".vehicles-card-container");
 const dialog = document.getElementById("displayBooking-dialog");
-
-
-//set locations in select 
+const bookingPageDatesSnackbar = document.querySelector("#bookingPage-dates-snackbar");
+//set locations in select
 window.addEventListener("load", () => {
   const locationArr = JSON.parse(localStorage.getItem("locations"));
 
@@ -25,6 +24,28 @@ function filterOptionSearchParams() {
   const startDateTime = searchParams.get("start-date");
   const endDateTime = searchParams.get("end-date");
 
+  if (
+    location == null ||
+    startDateTime == null ||
+    endDateTime == null ||
+    location === "" ||
+    startDateTime === "" ||
+    endDateTime === "" ||
+    location === undefined ||
+    startDateTime === undefined ||
+    endDateTime === undefined
+  ) {
+    window.location.replace(
+      `http://127.0.0.1:5500/bookingPage.html?locationSelect=Mumbai&start-date=${
+        new Date().toISOString().split("T")[0]
+      }T00%3A00&end-date=${
+        new Date(new Date().getTime() + 7 * 24 * 60 * 60 * 1000)
+          .toISOString()
+          .split("T")[0]
+      }T00%3A00`
+    );
+  }
+
   const filterOptions = {
     location: location,
     start_date: startDateTime.split("T")[0],
@@ -32,8 +53,64 @@ function filterOptionSearchParams() {
     start_time: startDateTime.split("T")[1],
     end_time: endDateTime.split("T")[1],
   };
+
   prePopulateForm(location, startDateTime, endDateTime);
   filterVehicles(filterOptions, startDateTime, endDateTime);
+}
+
+function validateAndRedirect(event) {
+  event.preventDefault();
+  // Get form elements
+  const locationSelect = document.querySelector(".locationSelect");
+  const startDateInput = document.getElementById("start-date-time");
+  const endDateInput = document.getElementById("end-date-time");
+
+  // Validate location
+  if (locationSelect.value === "") {
+    bookingPageSnackbar("Please select a city",2000);
+    return false;
+  }
+
+  // Validate if dates are empty
+  if (startDateInput.value === "" || endDateInput.value === "") {
+    bookingPageSnackbar("Please select a valid date range",2000);
+    return false;
+  }
+
+  // Validate date and time
+  const startDate = new Date(startDateInput.value);
+  const endDate = new Date(endDateInput.value);
+
+  // Validate if start date is in the past
+  const bufferTime = 1 * 60 * 1000; // 1 minute in milliseconds
+
+  if (
+    startDate < new Date() - bufferTime ||
+    endDate < new Date() - bufferTime
+  ) {
+    bookingPageSnackbar("Dates must not be  in the past",2000);
+    return false;
+  }
+
+  // Validate if end date is at least 1 hour ahead of start date
+  const minDifference = 1 * 30 * 60 * 1000; // 1 hour in milliseconds
+  if (endDate < startDate) {
+    bookingPageSnackbar("Enter Valid Dates",2000);
+    return false;
+  } else if (endDate - startDate < minDifference) {
+    bookingPageSnackbar("Minimum duration between start and end date should be 30mins",2000);
+    return false;
+  }
+
+  // Construct the URL for redirection
+  const redirectURL = `http://127.0.0.1:5500/bookingPage.html?locationSelect=${encodeURIComponent(
+    locationSelect.value
+  )}&start-date=${encodeURIComponent(
+    startDateInput.value
+  )}&end-date=${encodeURIComponent(endDateInput.value)}`;
+
+  // Redirect to the new URL
+  window.location.replace(redirectURL);
 }
 
 //filter vehicle on basis of location
@@ -135,10 +212,11 @@ function calculateEachVehiclePrice(
   morningHours,
   nightHours
 ) {
+  console.log(hourlyDayPrice, hourlyNightPrice, morningHours, nightHours);
   const totalAmount =
     hourlyDayPrice * morningHours + hourlyNightPrice * nightHours;
-  console.log(totalAmount);
-  return totalAmount;
+  console.log(totalAmount.toFixed(2));
+  return totalAmount.toFixed(2);
 }
 
 //hours difference
@@ -159,22 +237,24 @@ function calculateHoursBetweenDates(dateTime1, dateTime2) {
   let hoursInPeriod1 = 0;
   let hoursInPeriod2 = 0;
 
-  // Calculate the difference in milliseconds
-  const timeDifference = Math.abs(date2 - date1);
+  // Calculate the difference in minutes
+  const minutesDifference = (date2 - date1) / (1000 * 60);
 
-  // Calculate the difference in hours
-  const hoursDifference = timeDifference / (1000 * 60 * 60);
-
-  // Iterate through each hour and calculate hours for each time period
-  for (let i = 0; i < hoursDifference; i++) {
-    const currentHour = new Date(date1.getTime() + i * 60 * 60 * 1000);
+  // Iterate through each minute and calculate hours for each time period
+  for (let i = 0; i < minutesDifference; i++) {
+    const currentMinute = i;
+    const currentHour = new Date(date1.getTime() + currentMinute * 60 * 1000);
 
     if (isBetween6AMand10PM(currentHour)) {
-      hoursInPeriod1++;
+      hoursInPeriod1 += 1 / 60; // Increment by 1 minute
     } else if (isBetween10PMand6AM(currentHour)) {
-      hoursInPeriod2++;
+      hoursInPeriod2 += 1 / 60; // Increment by 1 minute
     }
   }
+
+  // Round the result to 2 decimal places
+  hoursInPeriod1 = Math.round(hoursInPeriod1 * 100) / 100;
+  hoursInPeriod2 = Math.round(hoursInPeriod2 * 100) / 100;
 
   return { morningHours: hoursInPeriod1, nightHours: hoursInPeriod2 };
 }
@@ -253,9 +333,13 @@ function checkUserAuthentication() {
   const currUser = localStorage.getItem("currUser");
   console.log(currUser);
   if (currUser === null) {
-    window.location.replace(
-      `./signIn.html?redirect=${encodeURIComponent(window.location.href)}`
-    );
+    const redirectURL = window.location.href;
+    console.log(redirectURL);
+    localStorage.setItem("redirectURL", redirectURL);
+    window.location = './signin.html';
+    // window.location.replace(
+    //  redirectURL
+    // );
   }
 }
 
@@ -271,7 +355,7 @@ function addEventListenerToBookBtns() {
       let vehicle = JSON.parse(vehicleString);
       vehicle = restoreSpacesInObject(vehicle);
       const startDT = vehicle.startDateTime.split("T");
-      const endDT = vehicle.startDateTime.split("T");
+      const endDT = vehicle.endDateTime.split("T");
       const startDate = startDT[0];
       const startTime = startDT[1];
       const endDate = endDT[0];
@@ -369,3 +453,16 @@ function showSnackbar() {
     snackbar.className = snackbar.className.replace("show", "");
   }, 3000);
 }
+
+//snackbar
+function bookingPageSnackbar(message, timeout = 3000) {
+  bookingPageDatesSnackbar.className = "show";
+  bookingPageDatesSnackbar.textContent = message;
+  setTimeout(function () {
+    bookingPageDatesSnackbar.className = bookingPageDatesSnackbar.className.replace(
+    "show",
+    ""
+   );
+  }, timeout);
+ }
+ 
